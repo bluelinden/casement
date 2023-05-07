@@ -1,0 +1,26 @@
+{
+  "name": "casement",
+  "version": "1.0.0",
+  "description": "An iFrame comms library for giving your app access to the outside world.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bluelinden/casement.git"
+  },
+  "keywords": [
+    "iframe",
+    "postmate"
+  ],
+  "author": "blue linden <blue@bluelinden.art> (https://bluelinden.art)",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/bluelinden/casement/issues"
+  },
+  "homepage": "https://github.com/bluelinden/casement#readme",
+  "dependencies": {
+    "typescript": "^5.0.4"
+  }
+}
