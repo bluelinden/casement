@@ -3,7 +3,7 @@ interface OutsideOptions {
   pageUrl?: string;
   allowedDomain: string;
   onReady?: () => void,
-  onMessage?: (message: any) => void,
+  onMessage: (message: any) => void,
   onKill?: () => void,
   container?: HTMLElement,
   iFrame?: HTMLIFrameElement,
@@ -34,26 +34,38 @@ export default class Outside {
 
   send(message: any) {
     // Send a message without expecting a response
-    return new Promise((resolve, reject) => {
-      this.iFrame.contentWindow!.postMessage({ type: 'casement-outside-message', message }, this.allowedDomain);
-    });
-  }
+    this.iFrame!.contentWindow!.postMessage({ type: 'casement-outside-message', message }, this.allowedDomain);
+  };
 
   request(message: any) {
     // Send a message and expect a response
-    return new Promise((resolve, reject) => {
-      this.iFrame.contentWindow!.postMessage({ type: 'casement-outside-request', message }, this.allowedDomain);
-      window.addEventListener('message', (event) => {
+    return new Promise((resolve) => {
+      this.iFrame!.contentWindow!.postMessage({ type: 'casement-outside-request', transmissionID: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15), message }, this.allowedDomain);
+      const handleResponse = (event: MessageEvent) => {
         if (event.origin !== this.allowedDomain) return;
-        if (event.data.type === 'casement-inside-response') {
+        if (event.data.type === 'casement-inside-response' && 
+            event.data.transmissionID === message.transmissionID) {
+          window.removeEventListener('message', handleResponse)
           resolve(event.data.message);
         }
-      });
+      }
+      window.addEventListener('message', handleResponse);
     });
   }
 
-  kill() {
-    this.iFrame.contentWindow!.postMessage({ type: 'casement-outside-kill' }, this.allowedDomain);
+  kill(force: boolean = false) {
+    this.iFrame!.contentWindow!.postMessage({ type: 'casement-outside-kill' }, this.allowedDomain);
+    const killiFrame = (event: MessageEvent) => {
+      if (event.origin !== this.allowedDomain) return;
+      if (event.data.type === 'casement-inside-kill-ready') { // @ts-ignore
+        this.iFrame!.remove();
+        window.removeEventListener('message', killiFrame);
+      }
+    }
+    if (!force) window.addEventListener('message', killiFrame);
+    else if (force) {
+      this.iFrame!.remove();
+    }
   }
 
   constructor(config: OutsideOptions) {
@@ -66,9 +78,9 @@ export default class Outside {
     if (config.container) {
       this.container = config.container;
       this.iFrame = document.createElement('iframe');
+      this.iFrame.src = this.pageUrl;
       this.container.appendChild(this.iFrame);
-    }
-    if (config.iFrame) this.iFrame = config.iFrame;
+    } else if (config.iFrame) this.iFrame = config.iFrame;
 
     this.init();
   }

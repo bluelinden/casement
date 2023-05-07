@@ -8,4 +8,4 @@ Plenty of people have tried to build iFrame comms libraries before. Most of them
 Casement is available on NPM. You can install it with `npm install casement`.
 
 ## Why does it exist?
-So many iFrame comms libraries don't take into account my use case. This isn't for everyone, as its intended purpose is to help a sandboxed app within an iFrame communicate with a container window with access to a larger API. Most other use cases are handled by [Postmate](https://github.com/dollarshaveclub/postmate). 
+So many iFrame comms libraries don't take into account my use case. This isn't for everyone, as its *intended* purpose is to help a sandboxed app within an iFrame communicate with a container window with access to a larger API. Most other use cases are handled by [Postmate](https://github.com/dollarshaveclub/postmate). In my case it serves as an adapter for Ember.js apps in iFrames to communicate with Google Apps Script APIs.

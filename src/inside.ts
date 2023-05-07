@@ -33,18 +33,18 @@ export default class Inside {
   request(message: any) {
     // Send a message and expect a response
     return new Promise((resolve, reject) => {
-      window.parent.postMessage({ type: 'casement-inside-request', message }, this.allowedDomain);
-      window.addEventListener('message', (event) => {
+      window.parent.postMessage({ type: 'casement-inside-request', transmissionID: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15), message }, this.allowedDomain);
+      const handleResponse = (event: MessageEvent) => {
         if (event.origin !== this.allowedDomain) return;
-        if (event.data.type === 'casement-outside-response') {
+        if (event.data.type === 'casement-outside-response' &&
+          event.data.transmissionID === message.transmissionID) {
+          window.removeEventListener('message', handleResponse)
           resolve(event.data.message);
         }
-      });
+      }
+      window.addEventListener('message', handleResponse);
     });
   }
-
-
-
 
   constructor(config: InsideOptions) {
     this.name = config.name;
