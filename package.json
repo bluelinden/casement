@@ -2,7 +2,7 @@
   "name": "casement",
   "version": "1.1.0",
   "description": "An iFrame comms library for giving your app access to the outside world.",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "build": "tsc && webpack --mode=production"
   },
