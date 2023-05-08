@@ -12,11 +12,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 })(function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Outside = exports.Inside = void 0;
     const inside_1 = __importDefault(require("./inside"));
+    exports.Inside = inside_1.default;
     const outside_1 = __importDefault(require("./outside"));
-    const casement = {
-        Inside: inside_1.default,
-        Outside: outside_1.default
-    };
-    exports.default = casement;
+    exports.Outside = outside_1.default;
 });
