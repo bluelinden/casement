@@ -1,10 +1,10 @@
 {
   "name": "casement",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "An iFrame comms library for giving your app access to the outside world.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc && webpack --mode=production"
   },
   "repository": {
     "type": "git",
@@ -14,13 +14,16 @@
     "iframe",
     "postmate"
   ],
+  "unpkg": "dist/casement.min.js",
   "author": "blue linden <blue@bluelinden.art> (https://bluelinden.art)",
   "license": "GPL-3.0-or-later",
   "bugs": {
     "url": "https://github.com/bluelinden/casement/issues"
   },
   "homepage": "https://github.com/bluelinden/casement#readme",
-  "dependencies": {
+  "devDependencies": {
+    "@webpack-cli/generators": "^3.0.3",
+    "ts-loader": "^9.4.2",
     "typescript": "^5.0.4"
   }
 }

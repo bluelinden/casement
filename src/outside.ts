@@ -1,10 +1,8 @@
 interface OutsideOptions {
   name: string
   pageUrl?: string;
-  allowedDomain: string;
   onReady?: () => void,
   onMessage: (message: any) => void,
-  onKill?: () => void,
   container?: HTMLElement,
   iFrame?: HTMLIFrameElement,
 }
@@ -21,14 +19,7 @@ export default class Outside {
 
   init() {
     window.addEventListener('message', (event) => {
-      if (this.allowedDomain !== event.origin) return;
-      if (event.data.type === 'casement-inside-ready') {
-        if (this.onReady) this.onReady();
-      } else if (event.data.type === 'casement-inside-message') {
-        if (this.onMessage) this.onMessage(event.data.message);
-      } else if (event.data.type === 'casement-inside-kill') {
-        if (this.onKill) this.onKill();
-      }
+      this.handleIncoming
     });
   }
 
@@ -40,11 +31,18 @@ export default class Outside {
   request(message: any) {
     // Send a message and expect a response
     return new Promise((resolve) => {
-      this.iFrame!.contentWindow!.postMessage({ type: 'casement-outside-request', transmissionID: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15), message }, this.allowedDomain);
+      // post a message to the parent window
+      this.iFrame!.contentWindow!.postMessage({ 
+        type: `casement-${this.name}-outside-request`, 
+        transmissionID: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15), 
+        message 
+      }, this.allowedDomain);
+
+      // response handler
       const handleResponse = (event: MessageEvent) => {
         if (event.origin !== this.allowedDomain) return;
-        if (event.data.type === 'casement-inside-response' && 
-            event.data.transmissionID === message.transmissionID) {
+        if (event.data.type === `casement-${this.name}-inside-response` &&
+          event.data.transmissionID === message.transmissionID) {
           window.removeEventListener('message', handleResponse)
           resolve(event.data.message);
         }
@@ -53,7 +51,33 @@ export default class Outside {
     });
   }
 
+  private handleIncoming(event: MessageEvent) {
+    // Handle incoming messages. No response is needed.
+    if (event.origin !== this.allowedDomain) return;
+    if (event.data.type === `casement-${this.name}-inside-message`) {
+      // if there's a handler, call it
+      if (this.onMessage) this.onMessage(event.data.message);
+
+      // if there's no handler, warn the user
+      else console.warn('Casement Error: Received a message from inside but no handler was set. Remember to pass a handler function to the "onMessage" option when creating a new casement.Outside instance.');
+    }
+
+    // Handle incoming requests, specifically. Call the handler and send a response with its return value.
+    if (event.data.type === `casement-${this.name}-inside-request`) {
+      if (this.onMessage) {
+        window.parent.postMessage({ 
+            type: `casement-${this.name}-outside-response`, 
+            message: this.onMessage(event.data.message) 
+          }, 
+          this.allowedDomain
+        );
+      }
+      else console.warn('Casement Error: Received a request from inside but no handler was set. Remember to pass a handler function to the "onMessage" option when creating a new casement.Outside instance.');
+    }
+  }
+
   kill(force: boolean = false) {
+    if (this.onKill) this.onKill();
     this.iFrame!.contentWindow!.postMessage({ type: 'casement-outside-kill' }, this.allowedDomain);
     const killiFrame = (event: MessageEvent) => {
       if (event.origin !== this.allowedDomain) return;
@@ -71,10 +95,9 @@ export default class Outside {
   constructor(config: OutsideOptions) {
     this.name = config.name;
     this.pageUrl = config.pageUrl || '/';
-    this.allowedDomain = config.allowedDomain;
+    this.allowedDomain = this.pageUrl.split('/').slice(0, 3).join('/');
     if (config.onReady) this.onReady = config.onReady;
     if (config.onMessage) this.onMessage = config.onMessage;
-    if (config.onKill) this.onKill = config.onKill;
     if (config.container) {
       this.container = config.container;
       this.iFrame = document.createElement('iframe');
