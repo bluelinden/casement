@@ -27,27 +27,28 @@
         request(message) {
             if (!this.allowSend) {
                 console.warn('Casement Error: Cannot send message. The iFrame has not yet loaded, or has not yet confirmed that it is ready.');
-                // Send a message and expect a response
-                return new Promise((resolve) => {
-                    // post a message to the parent window
-                    this.iFrame.contentWindow.postMessage({
-                        type: `casement-${this.name}-outside-request`,
-                        transmissionID: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
-                        message
-                    }, this.allowedDomain);
-                    // response handler
-                    const handleResponse = (event) => {
-                        if (event.origin !== this.allowedDomain)
-                            return;
-                        if (event.data.type === `casement-${this.name}-inside-response` &&
-                            event.data.transmissionID === message.transmissionID) {
-                            window.removeEventListener('message', handleResponse);
-                            resolve(event.data.message);
-                        }
-                    };
-                    window.addEventListener('message', handleResponse);
-                });
+                return;
             }
+            // Send a message and expect a response
+            return new Promise((resolve) => {
+                // post a message to the parent window
+                this.iFrame.contentWindow.postMessage({
+                    type: `casement-${this.name}-outside-request`,
+                    transmissionID: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
+                    message
+                }, this.allowedDomain);
+                // response handler
+                const handleResponse = (event) => {
+                    if (event.origin !== this.allowedDomain)
+                        return;
+                    if (event.data.type === `casement-${this.name}-inside-response` &&
+                        event.data.transmissionID === message.transmissionID) {
+                        window.removeEventListener('message', handleResponse);
+                        resolve(event.data.message);
+                    }
+                };
+                window.addEventListener('message', handleResponse);
+            });
         }
         handleIncoming(event) {
             // Handle incoming messages. No response is needed.
