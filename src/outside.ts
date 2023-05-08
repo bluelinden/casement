@@ -36,6 +36,8 @@ export default class Outside {
   request(message: any) {
     if (!this.allowSend) {
       console.warn('Casement Error: Cannot send message. The iFrame has not yet loaded, or has not yet confirmed that it is ready.');
+      return;
+    }
     // Send a message and expect a response
     return new Promise((resolve) => {
       // post a message to the parent window

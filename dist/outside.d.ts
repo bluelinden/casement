@@ -15,9 +15,10 @@ export default class Outside {
     onKill?: () => void;
     container?: HTMLElement;
     iFrame?: HTMLIFrameElement;
+    allowSend: boolean;
     init(): void;
     send(message: any): void;
-    request(message: any): Promise<unknown>;
+    request(message: any): Promise<unknown> | undefined;
     private handleIncoming;
     kill(force?: boolean): void;
     constructor(config: OutsideOptions);
