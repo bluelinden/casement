@@ -1,6 +1,6 @@
 {
   "name": "casement",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "An iFrame comms library for giving your app access to the outside world.",
   "main": "dist/index.js",
   "scripts": {
