@@ -28,6 +28,7 @@ export default class Outside extends Peer {
       console.warn('Casement Error: Cannot send message. The iFrame has not yet loaded, or has not yet confirmed that it is ready.');
       return;
     }
+    if (!actionName) actionName = 'casement-message';
     // Send a message without expecting a response
     this.iFrame!.contentWindow!.postMessage({ 
       type: 'casement-outside-message', 
@@ -36,11 +37,12 @@ export default class Outside extends Peer {
     }, this.allowedDomain);
   };
 
-  on(messageName: string, handler: (message: any) => void | any) {
-
+  on(messageName: string, handler: (message: any) => void | Promise<any>) {
+    if (!this.onMessage) this.onMessage = [];
+    this.onMessage.push({ name: messageName, callback: handler });
   }
 
-  request(message: any) {
+  request(message: any, actionName?: string) {
     if (!this.allowSend) {
       console.warn('Casement Error: Cannot send message. The iFrame has not yet loaded, or has not yet confirmed that it is ready.');
       return;
@@ -51,7 +53,8 @@ export default class Outside extends Peer {
       this.iFrame!.contentWindow!.postMessage({ 
         type: `casement-${this.name}-outside-request`, 
         transmissionID: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15), 
-        message 
+        message,
+        actionName,
       }, this.allowedDomain);
 
       // response handler
@@ -86,12 +89,15 @@ export default class Outside extends Peer {
         else console.warn('Casement Error: Received a message from inside but no handler was set. Remember to pass a handler function to the "onMessage" option when creating a new casement.Outside instance.');
         break;
 
-      // Handle incoming requests, specifically. Call the handler and send a response with its return value.
+      // Handle incoming requests, specifically. Make all the handlers race to see which one will handle the request.
       case `casement-${this.name}-inside-request`:
         if (this.onMessage) {
           this.iFrame!.contentWindow!.postMessage({ 
               type: `casement-${this.name}-outside-response`, 
-              message: this.onMessage(event.data.message) 
+              message: Promise.all(this.onMessage.map((handler) => {
+                if (handler.name === event.data.actionName) return handler.callback(event.data.message);
+                else if (handler.name === '*') return handler.callback(event.data.message, event.data.actionName);
+              }))
             }, 
             this.allowedDomain
           );
@@ -106,7 +112,7 @@ export default class Outside extends Peer {
     this.iFrame!.contentWindow!.postMessage({ type: 'casement-outside-kill' }, this.allowedDomain);
     const killiFrame = (event: MessageEvent) => {
       if (event.origin !== this.allowedDomain) return;
-      if (event.data.type === 'casement-inside-kill-ready') { // @ts-ignore
+      if (event.data.type === `casement-inside-${this.name}-kill-ready`) { // @ts-ignore
         this.iFrame!.remove();
         window.removeEventListener('message', killiFrame);
       }
@@ -123,7 +129,6 @@ export default class Outside extends Peer {
     this.pageUrl = config.pageUrl || '/';
     this.allowedDomain = this.pageUrl.split('/').slice(0, 3).join('/');
     if (config.onReady) this.onReady = config.onReady;
-    if (config.onMessage) this.onMessage = config.onMessage;
     if (config.container) {
       this.container = config.container;
       this.iFrame = document.createElement('iframe');
