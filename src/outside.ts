@@ -81,8 +81,8 @@ export default class Outside extends Peer {
 
       case `casement-${this.name}-inside-message` && event.data.actionName:
           if (this.onMessage) this.onMessage.forEach((handler) => {
-            if (handler.name === event.data.actionName) return handler.callback(event.data.message);
-            else if (handler.name === '*') return handler.callback(event.data.message, event.data.actionName);
+            if (handler.name === event.data.actionName) handler.callback(event.data.message);
+            else if (handler.name === '*') handler.callback(event.data.message, event.data.actionName);
           });
 
         // if there's no handler, warn the user
