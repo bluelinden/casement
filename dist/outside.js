@@ -4,27 +4,39 @@
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports"], factory);
+        define(["require", "exports", "./peer"], factory);
     }
 })(function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    class Outside {
+    const peer_1 = require("./peer");
+    class Outside extends peer_1.Peer {
         init() {
             window.addEventListener('message', (event) => {
                 this.handleIncoming;
             });
         }
-        send(message) {
+        send(message, actionName) {
             if (!this.allowSend) {
                 console.warn('Casement Error: Cannot send message. The iFrame has not yet loaded, or has not yet confirmed that it is ready.');
                 return;
             }
+            if (!actionName)
+                actionName = 'casement-message';
             // Send a message without expecting a response
-            this.iFrame.contentWindow.postMessage({ type: 'casement-outside-message', message }, this.allowedDomain);
+            this.iFrame.contentWindow.postMessage({
+                type: 'casement-outside-message',
+                message,
+                actionName,
+            }, this.allowedDomain);
         }
         ;
-        request(message) {
+        on(messageName, handler) {
+            if (!this.onMessage)
+                this.onMessage = [];
+            this.onMessage.push({ name: messageName, callback: handler });
+        }
+        request(message, actionName) {
             if (!this.allowSend) {
                 console.warn('Casement Error: Cannot send message. The iFrame has not yet loaded, or has not yet confirmed that it is ready.');
                 return;
@@ -35,7 +47,8 @@
                 this.iFrame.contentWindow.postMessage({
                     type: `casement-${this.name}-outside-request`,
                     transmissionID: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
-                    message
+                    message,
+                    actionName,
                 }, this.allowedDomain);
                 // response handler
                 const handleResponse = (event) => {
@@ -60,20 +73,29 @@
                     if (this.onReady)
                         this.onReady();
                     break;
-                case `casement-${this.name}-inside-message`:
-                    // if there's a handler, call it
+                case `casement-${this.name}-inside-message` && event.data.actionName:
                     if (this.onMessage)
-                        this.onMessage(event.data.message);
+                        this.onMessage.forEach((handler) => {
+                            if (handler.name === event.data.actionName)
+                                handler.callback(event.data.message);
+                            else if (handler.name === '*')
+                                handler.callback(event.data.message, event.data.actionName);
+                        });
                     // if there's no handler, warn the user
                     else
                         console.warn('Casement Error: Received a message from inside but no handler was set. Remember to pass a handler function to the "onMessage" option when creating a new casement.Outside instance.');
                     break;
-                // Handle incoming requests, specifically. Call the handler and send a response with its return value.
+                // Handle incoming requests, specifically. Make all the handlers race to see which one will handle the request.
                 case `casement-${this.name}-inside-request`:
                     if (this.onMessage) {
-                        window.parent.postMessage({
+                        this.iFrame.contentWindow.postMessage({
                             type: `casement-${this.name}-outside-response`,
-                            message: this.onMessage(event.data.message)
+                            message: Promise.all(this.onMessage.map((handler) => {
+                                if (handler.name === event.data.actionName)
+                                    return handler.callback(event.data.message);
+                                else if (handler.name === '*')
+                                    return handler.callback(event.data.message, event.data.actionName);
+                            }))
                         }, this.allowedDomain);
                     }
                     else
@@ -88,7 +110,7 @@
             const killiFrame = (event) => {
                 if (event.origin !== this.allowedDomain)
                     return;
-                if (event.data.type === 'casement-inside-kill-ready') { // @ts-ignore
+                if (event.data.type === `casement-inside-${this.name}-kill-ready`) { // @ts-ignore
                     this.iFrame.remove();
                     window.removeEventListener('message', killiFrame);
                 }
@@ -100,14 +122,13 @@
             }
         }
         constructor(config) {
+            super();
             this.allowSend = false;
             this.name = config.name;
             this.pageUrl = config.pageUrl || '/';
             this.allowedDomain = this.pageUrl.split('/').slice(0, 3).join('/');
             if (config.onReady)
                 this.onReady = config.onReady;
-            if (config.onMessage)
-                this.onMessage = config.onMessage;
             if (config.container) {
                 this.container = config.container;
                 this.iFrame = document.createElement('iframe');

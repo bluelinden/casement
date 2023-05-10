@@ -1,18 +1,20 @@
+import { Peer } from './peer';
 interface InsideOptions {
     name: string;
     allowedDomain: string;
     onReady?: () => void;
-    onMessage?: (message: any) => void;
 }
-export default class Inside {
-    name: string;
+export default class Inside extends Peer {
     allowedDomain: string;
-    onReady?: () => void;
-    onMessage?: (message: any) => void;
+    onKill?: () => void;
+    container?: HTMLElement;
+    allowSend: boolean;
     init(): void;
-    send(message: any): Promise<unknown>;
-    request(message: any): Promise<unknown>;
+    send(message: any, actionName?: string): void;
+    on(messageName: string, handler: (message: any) => void | Promise<any>): void;
+    request(message: any, actionName?: string): Promise<unknown> | undefined;
     private handleIncoming;
+    kill(force?: boolean): void;
     constructor(config: InsideOptions);
 }
 export {};

@@ -1,24 +1,23 @@
+import { Peer } from './peer';
 interface OutsideOptions {
     name: string;
     pageUrl?: string;
     onReady?: () => void;
-    onMessage: (message: any) => void;
+    handlers: ((message: any, messageName?: any) => void | any)[];
     container?: HTMLElement;
     iFrame?: HTMLIFrameElement;
 }
-export default class Outside {
-    name: string;
+export default class Outside extends Peer {
     pageUrl: string;
     allowedDomain: string;
-    onReady?: () => void;
-    onMessage?: (message: any) => void;
     onKill?: () => void;
     container?: HTMLElement;
     iFrame?: HTMLIFrameElement;
     allowSend: boolean;
     init(): void;
-    send(message: any): void;
-    request(message: any): Promise<unknown> | undefined;
+    send(message: any, actionName?: string): void;
+    on(messageName: string, handler: (message: any) => void | Promise<any>): void;
+    request(message: any, actionName?: string): Promise<unknown> | undefined;
     private handleIncoming;
     kill(force?: boolean): void;
     constructor(config: OutsideOptions);
