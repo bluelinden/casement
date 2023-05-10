@@ -70,6 +70,7 @@
             switch (event.data.type) {
                 case `casement-${this.name}-inside-ready`:
                     this.allowSend = true;
+                    this.iFrame.contentWindow.postMessage({ type: `casement-${this.name}-outside-ready` }, this.allowedDomain);
                     if (this.onReady)
                         this.onReady();
                     break;
