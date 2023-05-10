@@ -1,18 +1,17 @@
+import { Peer } from './peer';
+
 interface OutsideOptions {
   name: string
   pageUrl?: string;
   onReady?: () => void,
-  onMessage: (message: any) => void,
+  handlers: ((message: any, messageName?: any) => void | any)[],
   container?: HTMLElement,
   iFrame?: HTMLIFrameElement,
 }
 
-export default class Outside {
-  name: string;
+export default class Outside extends Peer {
   pageUrl: string;
   allowedDomain: string;
-  onReady?: () => void;
-  onMessage?: (message: any) => void;
   onKill?: () => void;
   container?: HTMLElement;
   iFrame?: HTMLIFrameElement;
@@ -24,14 +23,22 @@ export default class Outside {
     });
   }
 
-  send(message: any) {
+  send(message: any, actionName?: string) {
     if (!this.allowSend) {
       console.warn('Casement Error: Cannot send message. The iFrame has not yet loaded, or has not yet confirmed that it is ready.');
       return;
     }
     // Send a message without expecting a response
-    this.iFrame!.contentWindow!.postMessage({ type: 'casement-outside-message', message }, this.allowedDomain);
+    this.iFrame!.contentWindow!.postMessage({ 
+      type: 'casement-outside-message', 
+      message,
+      actionName,
+    }, this.allowedDomain);
   };
+
+  on(messageName: string, handler: (message: any) => void | any) {
+
+  }
 
   request(message: any) {
     if (!this.allowSend) {
@@ -69,9 +76,11 @@ export default class Outside {
         if (this.onReady) this.onReady();
         break;
 
-      case `casement-${this.name}-inside-message`:
-        // if there's a handler, call it
-        if (this.onMessage) this.onMessage(event.data.message);
+      case `casement-${this.name}-inside-message` && event.data.actionName:
+          if (this.onMessage) this.onMessage.forEach((handler) => {
+            if (handler.name === event.data.actionName) return handler.callback(event.data.message);
+            else if (handler.name === '*') return handler.callback(event.data.message, event.data.actionName);
+          });
 
         // if there's no handler, warn the user
         else console.warn('Casement Error: Received a message from inside but no handler was set. Remember to pass a handler function to the "onMessage" option when creating a new casement.Outside instance.');
@@ -80,7 +89,7 @@ export default class Outside {
       // Handle incoming requests, specifically. Call the handler and send a response with its return value.
       case `casement-${this.name}-inside-request`:
         if (this.onMessage) {
-          window.parent.postMessage({ 
+          this.iFrame!.contentWindow!.postMessage({ 
               type: `casement-${this.name}-outside-response`, 
               message: this.onMessage(event.data.message) 
             }, 
@@ -109,6 +118,7 @@ export default class Outside {
   }
 
   constructor(config: OutsideOptions) {
+    super();
     this.name = config.name;
     this.pageUrl = config.pageUrl || '/';
     this.allowedDomain = this.pageUrl.split('/').slice(0, 3).join('/');
