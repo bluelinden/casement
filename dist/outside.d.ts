@@ -1,4 +1,4 @@
-import { Peer } from './peer';
+import { Peer } from './peer.js';
 interface OutsideOptions {
     name: string;
     pageUrl?: string;

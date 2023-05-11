@@ -4,13 +4,13 @@
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "./peer"], factory);
+        define(["require", "exports", "./peer.js"], factory);
     }
 })(function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    const peer_1 = require("./peer");
-    class Outside extends peer_1.Peer {
+    const peer_js_1 = require("./peer.js");
+    class Outside extends peer_js_1.Peer {
         init() {
             window.addEventListener('message', (event) => {
                 this.handleIncoming;

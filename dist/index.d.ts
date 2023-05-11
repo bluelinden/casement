@@ -1,3 +1,3 @@
-import Inside from "./inside";
-import Outside from "./outside";
+import Inside from "./inside.js";
+import Outside from "./outside.js";
 export { Inside, Outside };

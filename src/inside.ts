@@ -1,4 +1,4 @@
-import { Peer } from './peer';
+import { Peer } from './peer.js';
 
 // The options that can be passed to the constructor
 interface InsideOptions {

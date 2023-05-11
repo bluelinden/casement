@@ -31,7 +31,11 @@ const config = {
       '.tsx',
       '.ts',
       '.js'
-    ]
+    ],
+    extensionAlias: {
+      '.js': ['.ts', '.js'],
+      '.mjs': ['.mts', '.mjs'],
+    },
   }
 };
 

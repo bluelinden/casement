@@ -7,14 +7,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "./inside", "./outside"], factory);
+        define(["require", "exports", "./inside.js", "./outside.js"], factory);
     }
 })(function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Outside = exports.Inside = void 0;
-    const inside_1 = __importDefault(require("./inside"));
-    exports.Inside = inside_1.default;
-    const outside_1 = __importDefault(require("./outside"));
-    exports.Outside = outside_1.default;
+    const inside_js_1 = __importDefault(require("./inside.js"));
+    exports.Inside = inside_js_1.default;
+    const outside_js_1 = __importDefault(require("./outside.js"));
+    exports.Outside = outside_js_1.default;
 });
