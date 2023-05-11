@@ -11,13 +11,13 @@ const config = {
   },
   plugins: [
     new webpack.BannerPlugin({
-      banner: 'Casement: easy iFrame comms for sandboxed apps. copyright blue linden 2023, licensed under GNU GPLv3 or later',
+      banner: 'Casement: easy iFrame comms for sandboxed apps. copyright blue linden 2023, licensed under GNU GPLv3 or later.',
     }),
   ],
   module: {
     rules: [
       {
-        test: /\.ts(x)?$/,
+        test: /^(?!.*\.d\.ts$).*\.ts$/i,
         loader: 'ts-loader',
         exclude: [/node_modules/, /dist/],
         options: {
