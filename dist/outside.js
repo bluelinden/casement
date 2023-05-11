@@ -86,7 +86,7 @@
                     else
                         console.warn('Casement Error: Received a message from inside but no handler was set. Remember to pass a handler function to the "onMessage" option when creating a new casement.Outside instance.');
                     break;
-                // Handle incoming requests, specifically. Make all the handlers race to see which one will handle the request.
+                // Handle incoming requests, specifically. Call all callbacks.
                 case `casement-${this.name}-inside-request`:
                     if (this.onMessage) {
                         this.iFrame.contentWindow.postMessage({
