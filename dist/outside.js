@@ -63,7 +63,7 @@
                 this.loggy(`Casement: Sent request to inside window, ID ${transmissionID}.`);
                 // response handler
                 const handleResponse = (event) => {
-                    if (event.origin !== this.allowedDomain)
+                    if (event.origin !== this.allowedDomain && this.allowedDomain !== '*')
                         return;
                     this.loggy(`Casement: Received response from inside window, ID ${transmissionID}.`);
                     if (event.data.type === `casement-${this.name}-inside-response` &&
@@ -80,7 +80,7 @@
         handleIncoming(event) {
             this.loggy('Casement: Incoming parser called.');
             // Handle incoming messages. No response is needed.
-            if (event.origin !== this.allowedDomain)
+            if (event.origin !== this.allowedDomain && this.allowedDomain !== '*')
                 return;
             switch (event.data.type) {
                 case `casement-${this.name}-inside-ready`:
@@ -134,7 +134,7 @@
             this.loggy('Casement: Killing iFrame.');
             this.iFrame.contentWindow.postMessage({ type: 'casement-outside-kill' }, this.allowedDomain);
             const killiFrame = (event) => {
-                if (event.origin !== this.allowedDomain)
+                if (event.origin !== this.allowedDomain && this.allowedDomain !== '*')
                     return;
                 if (event.data.type === `casement-inside-${this.name}-kill-ready`) { // @ts-ignore
                     this.iFrame.remove();

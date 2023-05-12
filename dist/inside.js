@@ -64,7 +64,7 @@
                 this.loggy(`Casement: Sent request to outside window, ID ${transmissionID}.`);
                 // response handler
                 const handleResponse = (event) => {
-                    if (event.origin !== this.allowedDomain)
+                    if (event.origin !== this.allowedDomain && this.allowedDomain !== '*')
                         return;
                     this.loggy(`Casement: Received response from outside window, ID ${event.data.transmissionID}.`);
                     if (event.data.type === `casement-${this.name}-inside-response` &&
@@ -81,7 +81,7 @@
         handleIncoming(event) {
             this.loggy(`Casement: Incoming parser called.`);
             // Handle incoming messages. No response is needed.
-            if (event.origin !== this.allowedDomain)
+            if (event.origin !== this.allowedDomain && this.allowedDomain !== '*')
                 return;
             switch (event.data.type) {
                 case `casement-${this.name}-outside-ready`:
