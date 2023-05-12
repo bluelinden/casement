@@ -17,8 +17,9 @@
         }
         init() {
             window.addEventListener('message', (event) => {
-                this.handleIncoming;
+                this.handleIncoming(event);
             });
+            this.loggy('Casement: Sending ready message to outside window and listening for responses.');
             window.parent.postMessage({ type: `casement-${this.name}-inside-ready` });
         }
         send(message, actionName) {

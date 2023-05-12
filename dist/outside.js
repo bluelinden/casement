@@ -17,8 +17,9 @@
         }
         init() {
             window.addEventListener('message', (event) => {
-                this.handleIncoming;
+                this.handleIncoming(event);
             });
+            this.loggy('Casement: Listening for ready message from inside window.');
         }
         send(message, actionName) {
             if (!this.allowSend) {
