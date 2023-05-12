@@ -70,7 +70,10 @@ export default class Inside extends Peer {
 
       // response handler
       const handleResponse = (event: MessageEvent) => {
-        if (event.origin !== this.allowedDomain && this.allowedDomain !== '*') return;
+        if (event.origin !== this.allowedDomain && this.allowedDomain !== '*') {
+          this.loggy('Casement: Received response from outside window, but the origin did not match the allowed domain.') 
+          return;
+        }
         this.loggy(`Casement: Received response from outside window, ID ${event.data.transmissionID}.`);
         if (event.data.type === `casement-${this.name}-inside-response` &&
           event.data.transmissionID === message.transmissionID) {
@@ -88,7 +91,10 @@ export default class Inside extends Peer {
   private handleIncoming(event: MessageEvent) {
     this.loggy(`Casement: Incoming parser called.`);
     // Handle incoming messages. No response is needed.
-    if (event.origin !== this.allowedDomain && this.allowedDomain !== '*') return;
+    if (event.origin !== this.allowedDomain && this.allowedDomain !== '*') {
+          this.loggy('Casement: Received response from outside window, but the origin did not match the allowed domain.') 
+          return;
+        }
     switch (event.data.type) {
       case `casement-${this.name}-outside-ready`:
         this.loggy(`Casement: Received ready message from outside window.`);

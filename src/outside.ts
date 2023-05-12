@@ -73,7 +73,10 @@ export default class Outside extends Peer {
 
       // response handler
       const handleResponse = (event: MessageEvent) => {
-        if (event.origin !== this.allowedDomain && this.allowedDomain !== '*') return;
+        if (event.origin !== this.allowedDomain && this.allowedDomain !== '*') {
+          this.loggy('Casement: Received response from inside window, but the origin did not match the allowed domain.') 
+          return;
+        }
         this.loggy(`Casement: Received response from inside window, ID ${transmissionID}.`)
         if (event.data.type === `casement-${this.name}-inside-response` &&
           event.data.transmissionID === message.transmissionID) {
@@ -90,7 +93,10 @@ export default class Outside extends Peer {
   private handleIncoming(event: MessageEvent) {
     this.loggy('Casement: Incoming parser called.');
     // Handle incoming messages. No response is needed.
-    if (event.origin !== this.allowedDomain && this.allowedDomain !== '*') return;
+    if (event.origin !== this.allowedDomain && this.allowedDomain !== '*') {
+      this.loggy('Casement: Received response from inside window, but the origin did not match the allowed domain.') 
+      return;
+    }
     switch (event.data.type) {
       case `casement-${this.name}-inside-ready`:
         this.iFrame!.contentWindow!.postMessage({ type: `casement-${this.name}-outside-ready` }, this.allowedDomain);
@@ -140,7 +146,10 @@ export default class Outside extends Peer {
     this.loggy('Casement: Killing iFrame.');
     this.iFrame!.contentWindow!.postMessage({ type: 'casement-outside-kill' }, this.allowedDomain);
     const killiFrame = (event: MessageEvent) => {
-      if (event.origin !== this.allowedDomain && this.allowedDomain !== '*') return;
+      if (event.origin !== this.allowedDomain && this.allowedDomain !== '*') {
+          this.loggy('Casement: Received response from inside window, but the origin did not match the allowed domain.') 
+          return;
+        }
       if (event.data.type === `casement-inside-${this.name}-kill-ready`) { // @ts-ignore
         this.iFrame!.remove();
         this.loggy('Casement: iFrame killed.');
