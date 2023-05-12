@@ -6,6 +6,7 @@ interface OutsideOptions {
     handlers: ((message: any, messageName?: any) => void | any)[];
     container?: HTMLElement;
     iFrame?: HTMLIFrameElement;
+    debug?: boolean;
 }
 export default class Outside extends Peer {
     pageUrl: string;
@@ -14,6 +15,8 @@ export default class Outside extends Peer {
     container?: HTMLElement;
     iFrame?: HTMLIFrameElement;
     allowSend: boolean;
+    debug: boolean;
+    loggy(...args: any[]): void;
     init(): void;
     send(message: any, actionName?: string): void;
     on(messageName: string, handler: (message: any) => void | Promise<any>): void;
