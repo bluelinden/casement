@@ -221,7 +221,8 @@ export class Peer {
       case this.allowedDomain:
         return true; // allow specified domain
       default:
-        return false; // deny all other domains
+        if (this.allowedDomain === '*') return true; // allow all domains
+        else return false; // block all other domains
     }
   }
 
