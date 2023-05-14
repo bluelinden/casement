@@ -209,12 +209,12 @@
             }
         }
         domainCheck(domainRaw) {
+            if (this.allowedDomain === '*')
+                return true;
             const domain = new URL(domainRaw).origin;
             if (domain === new URL(this.allowedDomain).origin)
                 return true;
             else if (domain === window.location.origin)
-                return true;
-            else if (this.allowedDomain === '*')
                 return true;
             else
                 return false;
