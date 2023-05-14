@@ -78,7 +78,7 @@
                 this.loggy(`Casement: Sent request to ${there} window, ID ${transmissionID}.`);
                 // response handler
                 const handleResponse = (event) => {
-                    if (!this.domainCheck(event.origin)) {
+                    if (this.domainCheck(event.origin) === false) {
                         this.warny(`Casement: Received response from ${there} window, but the origin (${event.origin}) did not match the allowed domain of ${this.allowedDomain}.`);
                         return;
                     }
@@ -111,7 +111,7 @@
             const target = isInside ? window.parent : this.iFrame.contentWindow;
             this.loggy(`Casement: Incoming parser called.`, event);
             // Handle incoming messages. No response is needed.
-            if (this.domainCheck(event.origin)) {
+            if (this.domainCheck(event.origin) === false) {
                 this.warny(`Casement: Received message from ${there} window, but the origin (${event.origin}) did not match the allowed domain of ${this.allowedDomain}.`, event);
                 return;
             }
@@ -174,18 +174,18 @@
             this.loggy(`Casement: ${here} readiness handler called.`);
             // If the message is from the inside, send a ready message back and set the allowSend flag to true.
             // If the message is from the outside, set the allowSend flag to true.
-            if (!this.domainCheck(event.origin)) {
-                this.loggy(`Casement: Received ready message from ${there} window, but the origin did not match the allowed domain.`);
+            if (this.domainCheck(event.origin) === false) {
+                this.loggy(`Casement: Received ready message from ${there} window, but the origin did not match the allowed domain.`, event);
                 return;
             }
             if (name !== this.name) {
-                this.loggy(`Casement: Received ready message from ${here} window, but the name did not match the allowed name.`);
+                this.loggy(`Casement: Received ready message from ${here} window, but the name did not match the allowed name.`, event);
                 return;
             }
             switch (event.data.from) {
                 // if the message came from the inside, send a ready message back and set the allowSend flag to true
                 case 'inside':
-                    this.loggy(`Casement: Received ready message from inside window. Sending one back...`);
+                    this.loggy(`Casement: Received ready message from inside window. Sending one back...`, event);
                     this.allowSend = true;
                     if ((_a = this.iFrame) === null || _a === void 0 ? void 0 : _a.contentWindow)
                         this.iFrame.contentWindow.postMessage({
@@ -199,28 +199,25 @@
                 // if the message came from the outside, set the allowSend flag to true
                 case 'outside':
                     if (event.data.name === this.name)
-                        this.loggy(`Casement: Received ready message from outside window. Data channel is now open and both sides can send messages.`);
+                        this.loggy(`Casement: Received ready message from outside window. Data channel is now open and both sides can send messages.`, event);
                     this.allowSend = true;
                     if (this.onReady)
                         this.onReady();
                     break;
                 default:
-                    this.loggy(`Casement: Received a malformed ready message missing a 'from' property.`);
+                    this.loggy(`Casement: Received a malformed ready message missing a 'from' property.`, event);
             }
         }
         domainCheck(domainRaw) {
             const domain = new URL(domainRaw).origin;
-            switch (domain) {
-                case window.location.origin:
-                    return true; // allow same origin
-                case new URL(this.allowedDomain).origin:
-                    return true; // allow specified domain
-                default:
-                    if (this.allowedDomain === '*')
-                        return true; // allow all domains
-                    else
-                        return false; // block all other domains
-            }
+            if (domain === new URL(this.allowedDomain).origin)
+                return true;
+            else if (domain === window.location.origin)
+                return true;
+            else if (this.allowedDomain === '*')
+                return true;
+            else
+                return false;
         }
     }
     exports.Peer = Peer;
