@@ -208,13 +208,12 @@
                     this.loggy(`Casement: Received a malformed ready message missing a 'from' property.`);
             }
         }
-        domainCheck(domain) {
+        domainCheck(domainRaw) {
+            const domain = new URL(domainRaw).origin;
             switch (domain) {
-                case '*':
-                    return true; // allow all domains
                 case window.location.origin:
                     return true; // allow same origin
-                case this.allowedDomain:
+                case new URL(this.allowedDomain).origin:
                     return true; // allow specified domain
                 default:
                     if (this.allowedDomain === '*')
