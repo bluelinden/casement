@@ -22,7 +22,11 @@ export default class Inside extends Peer {
       this.handleIncomingAgnostic(event, true);
     });
     this.loggy('Casement: Sending ready message to outside window and listening for responses.')
-    window.parent.postMessage({ type: `casement-${this.name}-inside-ready` });
+    window.parent.postMessage({
+      type: 'casement-ready',
+      from: 'inside',
+      name: this.name,
+    }, this.allowedDomain);
   }
 
   send(message: any, actionName?: string) {
