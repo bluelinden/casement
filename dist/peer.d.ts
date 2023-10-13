@@ -1,5 +1,5 @@
 export declare class Peer {
-    onReady?: () => void;
+    onReady?: (peer: Peer) => void;
     onMessage?: {
         name: string;
         callback: (message: any, messageName?: string) => void | Promise<any>;

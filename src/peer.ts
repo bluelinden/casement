@@ -1,5 +1,5 @@
 export class Peer {
-  onReady?: () => void;
+  onReady?: (peer: Peer) => void;
   onMessage?: {
     name: string,
     callback: (message: any, messageName?: string) => void | Promise<any>,
@@ -195,7 +195,7 @@ export class Peer {
           from: 'outside', 
           name: this.name 
         }, this.allowedDomain);
-        if (this.onReady) this.onReady();
+        if (this.onReady) this.onReady(this);
         break;
 
       // if the message came from the outside, set the allowSend flag to true
@@ -203,7 +203,7 @@ export class Peer {
         if (event.data.name === this.name ) 
         this.loggy(`Casement: Received ready message from outside window. Data channel is now open and both sides can send messages.`, event);
         this.allowSend = true;
-        if (this.onReady) this.onReady();
+        if (this.onReady) this.onReady(this);
         break;
 
       default: 
